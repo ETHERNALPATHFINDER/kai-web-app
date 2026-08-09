@@ -1,0 +1,9 @@
+{
+  "name": "kai-web-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KAI Finans Merkezi + Günlük Merkezi — canlı, telefon üzerinden erişilebilir PWA versiyonu. Alanlar/Finans.md ve Alanlar/Görevler.md dosyalarını GitHub üzerinden canlı okur.",
+  "engines": {
+    "node": ">=18"
+  }
+}
