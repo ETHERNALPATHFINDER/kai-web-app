@@ -10,16 +10,16 @@ function taskMeta(t) {
 }
 
 function taskRow(t, opts = {}) {
-  const statusColor = t.durum === "Tamamlandı" ? "#30d158" : t.durum === "Sonuç Bekleniyor" ? "#0a84ff" : "#7d7d85";
+  const statusClass = t.durum === "Tamamlandı" ? "routine-status--done" : t.durum === "Sonuç Bekleniyor" ? "routine-status--pending" : "routine-status--plain";
   const showStatus = opts.showStatus !== false;
   const meta = taskMeta(t);
   return `
-    <div class="routine-row" style="${opts.first ? "border-top:none;" : ""} align-items:flex-start;">
+    <div class="routine-row routine-row--top">
       <div>
         <div class="routine-name">${esc(t.baslik)}</div>
-        ${meta ? `<div style="font-size:11px;color:#7d7d85;margin-top:2px;">${meta}</div>` : ""}
+        ${meta ? `<div class="routine-meta">${meta}</div>` : ""}
       </div>
-      ${showStatus ? `<span class="routine-status" style="color:${statusColor};font-style:normal;white-space:nowrap;">${esc(t.durum)}</span>` : ""}
+      ${showStatus ? `<span class="routine-status ${statusClass}">${esc(t.durum)}</span>` : ""}
     </div>`;
 }
 
@@ -37,7 +37,7 @@ function renderGunluk(vm) {
       </div>
 
       <div class="section">
-        <div class="section-title">Bugün</div>
+        <div class="section-title section-title--primary">Bugün</div>
         <div class="card">
           ${
             vm.bugun.length
@@ -69,9 +69,9 @@ function renderGunluk(vm) {
                       .filter(Boolean)
                       .join(" · ");
                     return `
-              <div class="routine-row" style="${i === 0 ? "border-top:none;" : ""}">
+              <div class="routine-row">
                 <span class="routine-name">${esc(t.baslik)}</span>
-                <span class="routine-status" style="font-style:normal;">${when}</span>
+                <span class="routine-status routine-status--plain">${when}</span>
               </div>`;
                   })
                   .join("")
@@ -81,16 +81,16 @@ function renderGunluk(vm) {
       </div>
 
       <div class="section">
-        <div class="section-title">Ertelenenler <span style="text-transform:none;letter-spacing:0;color:#5f5f68;font-weight:400;">(geçmiş tarihli, kapatılmamış)</span></div>
+        <div class="section-title">Ertelenenler <span class="section-title-note">(geçmiş tarihli, kapatılmamış)</span></div>
         <div class="card">
           ${
             vm.ertelenenler.length
               ? vm.ertelenenler
                   .map(
-                    (t, i) => `
-              <div class="routine-row" style="${i === 0 ? "border-top:none;" : ""}">
+                    (t) => `
+              <div class="routine-row">
                 <span class="routine-name">${esc(t.baslik)}</span>
-                <span class="routine-status" style="color:#ff9f0a;font-style:normal;">${esc(t.durum)} · ${t.gecikmeGun} gün gecikti</span>
+                <span class="routine-status routine-status--late">${esc(t.durum)} · ${t.gecikmeGun} gün gecikti</span>
               </div>`
                   )
                   .join("")
@@ -107,10 +107,10 @@ function renderGunluk(vm) {
               ? vm.sonucBekleyenler
                   .map(
                     (o) => `
-              <div style="margin-bottom:14px;">
-                <div style="font-weight:700;font-size:15px;margin-bottom:8px;">${esc(o.title)}</div>
-                ${o.bekleyenBilgi ? `<div style="font-size:13px;color:#9a9aa2;line-height:1.5;">Bekleyen bilgi: ${esc(o.bekleyenBilgi)}</div>` : ""}
-                ${o.not ? `<div style="font-size:12px;color:#6f6f78;margin-top:8px;">${esc(o.not)}</div>` : ""}
+              <div class="result-item">
+                <div class="result-item-title">${esc(o.title)}</div>
+                ${o.bekleyenBilgi ? `<div class="result-item-info">Bekleyen bilgi: ${esc(o.bekleyenBilgi)}</div>` : ""}
+                ${o.not ? `<div class="result-item-note">${esc(o.not)}</div>` : ""}
               </div>`
                   )
                   .join("")
@@ -126,8 +126,8 @@ function renderGunluk(vm) {
             vm.routines.length
               ? vm.routines
                   .map(
-                    (r, i) => `
-            <div class="routine-row" style="${i === 0 ? "border-top:none;" : ""}">
+                    (r) => `
+            <div class="routine-row">
               <span class="routine-name">${esc(r.name)}</span>
               <span class="routine-status">${esc(r.bugun)}${r.seri && r.seri !== "Veri eksik" ? " · Seri: " + esc(r.seri) : ""}</span>
             </div>`

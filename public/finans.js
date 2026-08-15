@@ -23,36 +23,34 @@ function renderFinans(vm) {
       </div>
 
       <div class="section">
-        <div class="section-title">Özet</div>
-        <div class="grid grid-5">
-          <div class="card">
-            <div class="summary-label">Kullanılabilir Bakiye</div>
-            <div class="summary-value">${KAI.fmtTRY(vm.kullanilabilirBakiye)}</div>
-            <div style="display:flex;gap:14px;margin-top:6px;font-size:11px;color:#9a9aa2;">
-              <span>Enpara: ${KAI.fmtTRY(anaHesap ? anaHesap.bakiyeler.TRY || 0 : 0)}</span>
-              <span>Nakit: ${KAI.fmtTRY(nakit ? nakit.bakiyeler.TRY || 0 : 0)}</span>
-            </div>
-            <div class="summary-sub">Günlük kullanılabilir toplam para</div>
-            <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:#7d7d85;">
-              Toplam varlıklar: ${currencyLine(vm.totalAssets) || "—"}
-            </div>
+        <div class="section-title section-title--primary">Özet</div>
+        <div class="card card--hero">
+          <div class="summary-label">Kullanılabilir Bakiye</div>
+          <div class="summary-value summary-value--hero">${KAI.fmtTRY(vm.kullanilabilirBakiye)}</div>
+          <div class="summary-hero-split">
+            <span>Enpara: ${KAI.fmtTRY(anaHesap ? anaHesap.bakiyeler.TRY || 0 : 0)}</span>
+            <span>Nakit: ${KAI.fmtTRY(nakit ? nakit.bakiyeler.TRY || 0 : 0)}</span>
           </div>
-          <div class="card">
+          <div class="summary-sub">Günlük kullanılabilir toplam para</div>
+          <div class="summary-hero-total">Toplam varlıklar: ${currencyLine(vm.totalAssets) || "—"}</div>
+        </div>
+        <div class="grid grid-4 summary-grid-secondary">
+          <div class="card card--quiet">
             <div class="summary-label">Toplam Borç</div>
             <div class="summary-value">${vm.debts.map((d) => KAI.fmtTRY(d.kalanTutar, d.paraBirimi)).join(" + ") || "—"}</div>
             <div class="summary-sub">${vm.debts.length} açık borç · para birimleri toplanmadı</div>
           </div>
-          <div class="card">
+          <div class="card card--quiet">
             <div class="summary-label">Bu Ay Gelir</div>
             <div class="summary-value">${KAI.fmtTRY(vm.monthlyFlow.gelirTRY)}</div>
             <div class="summary-sub">Yalnızca gerçek gelir satırları</div>
           </div>
-          <div class="card">
+          <div class="card card--quiet">
             <div class="summary-label">Bu Ay Gider</div>
             <div class="summary-value">${KAI.fmtTRY(vm.monthlyFlow.giderTRY)}</div>
             <div class="summary-sub">Borç verilenler ve iade bekleyenler hariç</div>
           </div>
-          <div class="card">
+          <div class="card card--quiet">
             <div class="summary-label">Net Nakit Akışı</div>
             <div class="summary-value">${vm.monthlyFlow.netTRY >= 0 ? "+" : ""}${KAI.fmtTRY(vm.monthlyFlow.netTRY)}</div>
             <div class="summary-sub">Gelir − Gider (bu ay)</div>
@@ -92,7 +90,7 @@ function renderFinans(vm) {
               <div class="debt-sub">${esc(d.tur)} · Alacaklı: ${esc(d.alacakli)}${d.oncelik ? " · Öncelik: " + esc(d.oncelik) : ""}</div>
               <div class="debt-amounts">
                 <div><div class="lbl">Başlangıç</div><div class="big">${KAI.fmtTRY(d.baslangicTutari, d.paraBirimi)}</div></div>
-                <div style="text-align:right"><div class="lbl">Kalan</div><div class="big">${KAI.fmtTRY(d.kalanTutar, d.paraBirimi)}</div></div>
+                <div class="right"><div class="lbl">Kalan</div><div class="big">${KAI.fmtTRY(d.kalanTutar, d.paraBirimi)}</div></div>
               </div>
               <div class="progress-track"><div class="progress-fill" style="width:${d.odenenOran}%"></div></div>
               <div class="goal-meta"><span>Ödenen: %${d.odenenOran}</span><span>Aylık ödeme: ${esc(d.planlananAylikOdeme || "Veri eksik")}</span></div>
@@ -105,7 +103,7 @@ function renderFinans(vm) {
       </div>
 
       <div class="section">
-        <div class="section-title">Alacaklar <span style="text-transform:none;letter-spacing:0;color:#5f5f68;font-weight:400;">(sana borçlu olanlar)</span></div>
+        <div class="section-title">Alacaklar <span class="section-title-note">(sana borçlu olanlar)</span></div>
         <div class="grid grid-2">
           ${
             vm.receivables.length
@@ -157,7 +155,7 @@ function renderFinans(vm) {
         }
         ${
           vm.goalsMissingNames && vm.goalsMissingNames.length
-            ? `<div style="font-size:12px;color:#7d7d85;margin-top:${vm.goals.length ? "12px" : "0"};">Henüz belirlenmemiş hedefler: ${vm.goalsMissingNames.map(esc).join(", ")}</div>`
+            ? `<div class="goal-missing-note${vm.goals.length ? "" : " goal-missing-note--flush"}">Henüz belirlenmemiş hedefler: ${vm.goalsMissingNames.map(esc).join(", ")}</div>`
             : ""
         }
       </div>
@@ -167,7 +165,7 @@ function renderFinans(vm) {
         ${vm.sonIslemler
           .map((t) => {
             const isTransfer = t.yon.startsWith("Transfer");
-            const color = isTransfer ? "#c8c8ce" : t.yon === "Gelir" ? "#30d158" : "#ff453a";
+            const amountClass = isTransfer ? "pay-amount--transfer" : t.yon === "Gelir" ? "pay-amount--income" : "pay-amount--expense";
             const sign = t.yon === "Gelir" || t.yon === "Transfer Giriş" ? "+" : t.yon === "Gider" || t.yon === "Transfer Çıkış" ? "-" : "";
             return `
             <div class="pay-item">
@@ -176,7 +174,7 @@ function renderFinans(vm) {
                 <div class="pay-meta">${esc(t.kategori)}${t.hesap ? " · " + esc(t.hesap) : ""}${t.not ? " · " + esc(t.not) : ""}</div>
               </div>
               <div>
-                <div class="pay-amount" style="color:${color};">${sign}${KAI.fmtTRY(t.tutar, t.paraBirimi)}</div>
+                <div class="pay-amount ${amountClass}">${sign}${KAI.fmtTRY(t.tutar, t.paraBirimi)}</div>
                 <div class="pay-date">${KAI.fmtDate(t.tarih)}</div>
               </div>
             </div>`;

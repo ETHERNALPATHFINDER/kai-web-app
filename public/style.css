@@ -1,4 +1,10 @@
-:root { color-scheme: dark; }
+:root {
+  color-scheme: dark;
+  --num-1: 15px; /* row-level amounts: pay-amount, acc-row values */
+  --num-2: 20px; /* card-level stats: secondary summary values, debt amounts */
+  --num-3: 26px; /* hero stat: kullanılabilir bakiye */
+  --num-4: 32px; /* daily completion number */
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
   min-height: 100dvh;
@@ -13,10 +19,24 @@ html, body {
 .topnav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
 .topnav .tabs { display: flex; gap: 8px; }
 .topnav a {
+  position: relative;
   text-decoration: none; color: #9a9aa2; font-size: 13px; font-weight: 600;
-  padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08);
+  padding: 8px 14px; border-radius: 999px; border: 1px solid transparent;
+  transition: color 150ms ease-out;
 }
-.topnav a.active { color: #f4f4f6; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); }
+.topnav a::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+  pointer-events: none;
+}
+.topnav a:not(.active) { border-color: rgba(255,255,255,0.08); }
+.topnav a.active { color: #f4f4f6; }
+.topnav a.active::before { opacity: 1; }
 .refresh-btn {
   font-size: 12px; font-weight: 600; color: #9a9aa2; background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 8px 14px; cursor: pointer;
@@ -27,31 +47,35 @@ html, body {
 
 .statusbar {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 14px 20px; border-radius: 16px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  padding: 11px 18px; border-radius: 14px;
+  background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 .status-left { display: flex; align-items: center; gap: 10px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: #30d158; box-shadow: 0 0 10px rgba(48,209,88,0.7); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #30d158; box-shadow: 0 0 10px rgba(48,209,88,0.7); }
 .dot.stale { background: #ffc400; box-shadow: 0 0 10px rgba(255,196,0,0.7); }
 .dot.error { background: #ff453a; box-shadow: 0 0 10px rgba(255,69,58,0.7); }
-.status-label { font-size: 15px; font-weight: 600; color: #d8d8dc; }
-.status-meta { font-size: 13px; color: #8b8b93; text-wrap: pretty; }
+.status-label { font-size: 13px; font-weight: 600; color: #d8d8dc; }
+.status-meta { font-size: 12px; color: #8b8b93; text-wrap: pretty; }
 
 .section { margin-bottom: 36px; }
 .section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8b8b93; margin-bottom: 14px; padding-left: 2px; }
+.section-title--primary { font-size: 13px; color: #c8c8ce; }
+.section-title-note { text-transform: none; letter-spacing: 0; color: #5f5f68; font-weight: 400; }
 
 .grid { display: grid; gap: 16px; }
 .grid-5 { grid-template-columns: repeat(5, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 @media (max-width: 980px) {
   .grid-5 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: 1fr; }
   .grid-2 { grid-template-columns: 1fr; }
 }
-@media (max-width: 560px) { .grid-5 { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .grid-5 { grid-template-columns: 1fr; } .grid-4 { grid-template-columns: 1fr; } }
 
 .card {
   background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08);
@@ -59,9 +83,37 @@ html, body {
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
 }
 
+/* Quieter card variant for secondary/list-adjacent content, so it doesn't compete with hero stats. */
+.card--quiet {
+  background: rgba(255,255,255,0.025); border-color: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+
+/* The one "hero" surface per view — reuses the existing accent blue as a soft ambient glow,
+   no new colors introduced. */
+.card--hero {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(10,132,255,0.22);
+  background: rgba(255,255,255,0.055);
+}
+.card--hero::after {
+  content: "";
+  position: absolute; top: -40%; right: -20%; width: 60%; height: 140%;
+  background: radial-gradient(circle, rgba(10,132,255,0.12), transparent 70%);
+  pointer-events: none;
+}
+
 .summary-label { font-size: 12px; color: #9a9aa2; font-weight: 600; margin-bottom: 10px; }
-.summary-value { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: #f4f4f6; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.summary-value { font-size: var(--num-2); font-weight: 700; letter-spacing: -0.01em; color: #f4f4f6; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.summary-value--hero { font-size: var(--num-3); position: relative; }
 .summary-sub { font-size: 12px; color: #6f6f78; margin-top: 8px; line-height: 1.4; }
+.summary-hero-split { display: flex; gap: 14px; margin-top: 6px; font-size: 11px; color: #9a9aa2; position: relative; }
+.summary-hero-total {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 11px; color: #7d7d85; position: relative;
+}
+.summary-grid-secondary { margin-top: 16px; }
 
 .acc-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acc-type { font-size: 12px; color: #8b8b93; margin-bottom: 16px; }
@@ -74,13 +126,16 @@ html, body {
 .debt-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .debt-sub { font-size: 12px; color: #8b8b93; margin-bottom: 16px; }
 .debt-amounts { display: flex; justify-content: space-between; margin-bottom: 14px; }
-.debt-amounts .big { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.debt-amounts .right { text-align: right; }
+.debt-amounts .big { font-size: var(--num-2); font-weight: 700; font-variant-numeric: tabular-nums; }
 .debt-amounts .lbl { font-size: 11px; color: #8b8b93; margin-bottom: 4px; }
 
 .empty { text-align: center; padding: 32px 20px; color: #7d7d85; font-size: 14px; }
 
 .goal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
 .goal-name { font-size: 15px; font-weight: 700; line-height: 1.35; text-wrap: balance; }
+.goal-missing-note { font-size: 12px; color: #7d7d85; margin-top: 12px; }
+.goal-missing-note--flush { margin-top: 0; }
 .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.08); color: #c8c8ce; white-space: nowrap; }
 .progress-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; margin: 12px 0 10px; position: relative; }
 .progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #0a84ff, #30d158); }
@@ -97,16 +152,31 @@ html, body {
 .pay-item > div:first-child { min-width: 0; }
 .pay-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pay-meta { font-size: 12px; color: #8b8b93; margin-top: 2px; }
-.pay-amount { font-size: 15px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.pay-amount { font-size: var(--num-1); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.pay-amount--income { color: #30d158; }
+.pay-amount--expense { color: #ff453a; }
+.pay-amount--transfer { color: #c8c8ce; }
 .pay-date { font-size: 11px; color: #8b8b93; text-align: right; margin-top: 2px; }
 
 .routine-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 14px; }
 .routine-row:first-child { border-top: none; }
+.routine-row--top { align-items: flex-start; }
 .routine-name { font-weight: 600; }
-.routine-status { color: #7d7d85; font-style: italic; font-size: 13px; }
+.routine-meta { font-size: 11px; color: #7d7d85; margin-top: 2px; }
+.routine-status { color: #7d7d85; font-style: italic; font-size: 13px; white-space: nowrap; }
+.routine-status--plain { font-style: normal; }
+.routine-status--done { color: #30d158; font-style: normal; }
+.routine-status--pending { color: #0a84ff; font-style: normal; }
+.routine-status--late { color: #ff9f0a; font-style: normal; }
 
-.completion-big { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.completion-big { font-size: var(--num-4); font-weight: 700; font-variant-numeric: tabular-nums; }
 .completion-sub { font-size: 13px; color: #8b8b93; margin-top: 6px; }
+
+.result-item { margin-bottom: 14px; }
+.result-item:last-child { margin-bottom: 0; }
+.result-item-title { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.result-item-info { font-size: 13px; color: #9a9aa2; line-height: 1.5; }
+.result-item-note { font-size: 12px; color: #6f6f78; margin-top: 8px; }
 
 .notice-item { padding: 12px 16px; border-radius: 14px; background: rgba(10,132,255,0.06); border: 1px solid rgba(10,132,255,0.18); font-size: 13px; color: #dcdce0; line-height: 1.5; margin-bottom: 10px; text-wrap: pretty; }
 .notice-item:last-child { margin-bottom: 0; }
@@ -163,7 +233,16 @@ footer { margin-top: 44px; padding-top: 20px; border-top: 1px solid rgba(255,255
   .section { margin-bottom: 24px; }
   .section-title { font-size: 12px; margin-bottom: 10px; }
   .card { padding: 14px; border-radius: 14px; }
+  .summary-value--hero { font-size: 23px; }
+  .debt-amounts .big { font-size: 18px; }
+  .completion-big { font-size: 28px; }
+  .acc-row { font-size: 12px; }
   .routine-row { padding: 8px 0; font-size: 13px; }
   .pay-item, .warn-item, .notice-item { padding: 10px 12px; }
-  .statusbar { padding: 12px 14px; margin-bottom: 20px; }
+  .pay-name { max-width: 46vw; }
+  .statusbar { padding: 10px 14px; margin-bottom: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topnav a, .topnav a::before { transition: none; }
 }
